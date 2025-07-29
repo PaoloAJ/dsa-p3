@@ -1,7 +1,7 @@
 
 export function greedySchedule(events) {
   // convert times to date if needed and sort by endTime
-  const socrted = events
+  const sorted = events
     .map(e => ({
       ...e,
       startTime: new Date(e.startTime),
