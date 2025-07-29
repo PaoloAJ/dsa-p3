@@ -1,14 +1,9 @@
 class Task {
-  constructor(priority, endTime, name, startTime, id) {
+  constructor(priority, deadline, name, duration, id) {
     this.priority = priority; // lower = higher priority
-    this.startTime = new Date(startTime); // when the task starts
+    this.deadline = new Date(deadline); // converts to a native "date" object in js
     this.name = name;
-    this.endTime = new Date(endTime); // when the task ends
+    this.duration = duration; // in seconds or minutes? You guys choose
     this.id = id;
-
-    // validates the times
-    if(this.endTime< this.startTime){
-      throw new Error("Invalid")
-    }
   }
 }
