@@ -77,6 +77,14 @@ class MinHeap {
   size() {
     return this.heap.length - 1;
   }
+  //returns the minheap as a list
+  GetAllTask(){
+    const MinHeapList=[];
+    for(let i=1;i<this.heap.size();i++){
+      MinHeapList.push(this.heap[i]);
+    }
+    return MinHeapList;
+  }
 }
 
 export default MinHeap;
