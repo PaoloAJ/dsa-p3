@@ -1,17 +1,24 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { MinHeap } from "./library/minHeap";
 import { greedySchedule } from "./library/greedy";
 
 function hasConflict(events, newEvent) {
-  return events.some(e =>
-    (newEvent.startTime < e.endTime && newEvent.endTime > e.startTime)
+  return events.some(
+    (e) => newEvent.startTime < e.endTime && newEvent.endTime > e.startTime
   );
 }
 
 function Page() {
   const [events, setEvents] = useState([]); //all events
   const [optimal, setOptimal] = useState([]); //optimal schedule
-  const [form, setForm] = useState({ title: "", startTime: "", endTime: "", category: "school" });
+  const [form, setForm] = useState({
+    title: "",
+    startTime: "",
+    endTime: "",
+    category: "school",
+  });
   const [error, setError] = useState("");
   const heapRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +32,7 @@ function Page() {
       const arr = data.events;
       //build MinHeap
       const heap = new MinHeap();
-      arr.forEach(ev => heap.insert(ev));
+      arr.forEach((ev) => heap.insert(ev));
       heapRef.current = heap;
       setEvents([...arr]);
       setOptimal(greedySchedule(arr));
@@ -42,7 +49,7 @@ function Page() {
       ...form,
       startTime: new Date(form.startTime).toISOString(),
       endTime: new Date(form.endTime).toISOString(),
-      priority: new Date(form.startTime).getTime()
+      priority: new Date(form.startTime).getTime(),
     };
     if (newEvent.startTime >= newEvent.endTime) {
       setError("End time must be after start time");
@@ -63,9 +70,9 @@ function Page() {
   //delete event handler
   function handleDelete(id) {
     //remove from events and rebuild heap
-    const updated = events.filter(e => e.id !== id);
+    const updated = events.filter((e) => e.id !== id);
     const heap = new MinHeap();
-    updated.forEach(ev => heap.insert(ev));
+    updated.forEach((ev) => heap.insert(ev));
     heapRef.current = heap;
     setEvents(updated);
     setOptimal(greedySchedule(updated));
@@ -75,44 +82,90 @@ function Page() {
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-center">Smart Scheduler</h1>
       <form onSubmit={handleAdd} className="mb-4 flex flex-col gap-2">
-        <input required placeholder="Title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-        <input required type="datetime-local" value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} />
-        <input required type="datetime-local" value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} />
-        <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+        <input
+          required
+          placeholder="Title"
+          value={form.title}
+          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+        />
+        <input
+          required
+          type="datetime-local"
+          value={form.startTime}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, startTime: e.target.value }))
+          }
+        />
+        <input
+          required
+          type="datetime-local"
+          value={form.endTime}
+          onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+        />
+        <select
+          value={form.category}
+          onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+        >
           <option value="school">School</option>
           <option value="work">Work</option>
           <option value="personal">Personal</option>
         </select>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Event</button>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Add Event
+        </button>
         {error && <div className="text-red-500">{error}</div>}
       </form>
       {loading ? (
         <div className="text-center">Loading events...</div>
       ) : (
         <>
-          <h2 className="font-semibold mb-2">Optimal (Non-Overlapping) Schedule</h2>
+          <h2 className="font-semibold mb-2">
+            Optimal (Non-Overlapping) Schedule
+          </h2>
           <ul className="space-y-2">
-            {optimal.map(ev => (
-              <li key={ev.id} className="border p-2 rounded flex justify-between items-center">
+            {optimal.map((ev) => (
+              <li
+                key={ev.id}
+                className="border p-2 rounded flex justify-between items-center"
+              >
                 <div>
                   <div className="font-bold">{ev.title}</div>
-                  <div className="text-sm">{new Date(ev.startTime).toLocaleString()} - {new Date(ev.endTime).toLocaleString()}</div>
+                  <div className="text-sm">
+                    {new Date(ev.startTime).toLocaleString()} -{" "}
+                    {new Date(ev.endTime).toLocaleString()}
+                  </div>
                   <div className="text-xs text-gray-500">{ev.category}</div>
                 </div>
-                <button onClick={() => handleDelete(ev.id)} className="text-red-500">Delete</button>
+                <button
+                  onClick={() => handleDelete(ev.id)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>
-          <h2 className="font-semibold mt-6 mb-2">All Events (MinHeap order)</h2>
+          <h2 className="font-semibold mt-6 mb-2">
+            All Events (MinHeap order)
+          </h2>
           <ul className="space-y-2">
             {events
               .slice()
               .sort((a, b) => a.priority - b.priority)
-              .map(ev => (
-                <li key={ev.id} className="border p-2 rounded flex justify-between items-center opacity-70">
+              .map((ev) => (
+                <li
+                  key={ev.id}
+                  className="border p-2 rounded flex justify-between items-center opacity-70"
+                >
                   <div>
                     <div className="font-bold">{ev.title}</div>
-                    <div className="text-sm">{new Date(ev.startTime).toLocaleString()} - {new Date(ev.endTime).toLocaleString()}</div>
+                    <div className="text-sm">
+                      {new Date(ev.startTime).toLocaleString()} -{" "}
+                      {new Date(ev.endTime).toLocaleString()}
+                    </div>
                     <div className="text-xs text-gray-500">{ev.category}</div>
                   </div>
                 </li>

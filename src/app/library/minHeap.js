@@ -70,17 +70,19 @@ class MinHeap {
     return smallest;
   }
   //view the top task without removing it
-  NextTask() {
+  nextTask() {
     return this.heap[1] || null;
   }
   //returns the size of the heap
   size() {
     return this.heap.length - 1;
   }
+
   //returns the minheap as a list
-  GetAllTask(){
-    const MinHeapList=[];
-    for(let i=1;i<this.heap.size();i++){
+  getAllTask() {
+    const MinHeapList = [];
+    for (let i = 1; i <= this.size(); i++) {
+      // skip null place holder
       MinHeapList.push(this.heap[i]);
     }
     return MinHeapList;
