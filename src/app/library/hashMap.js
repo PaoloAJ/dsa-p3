@@ -19,11 +19,14 @@ class hashMap {
       this.#arr = new Array(this.#bucketSize).fill(null);
       this.#items = 0;
 
-      // reinsert old entries
       for (const bucket of oldArr) {
         if (bucket !== null) {
           for (const entry of bucket) {
-            this.insert(entry.key, ...entry.value.getAllTasks());
+            // reinsert each task individually
+            const tasks = entry.value.getAllTask();
+            for (const task of tasks) {
+              this.insert(entry.key, task);
+            }
           }
         }
       }
@@ -48,7 +51,7 @@ class hashMap {
           // match by timestamp for accuracy
           day.value.insert(task);
           dayExists = true;
-          break; // stop searching once found
+          break;
         }
       }
 
@@ -68,35 +71,32 @@ class hashMap {
   }
 
   //gets all the keys in the hash map
-  GetDates(){
-    const dates=[];
+  getDates() {
+    const dates = [];
     //loops through the buckets
-    for(let i=0;i<this.#arr.length;i++){
+    for (let i = 0; i < this.#arr.length; i++) {
       //if the bucket is not empty
-      if(this.#arr[i]!==null){
+      if (this.#arr[i] !== null) {
         //loops through each entry in the bucket
-        for(let j=0;j<this.#arr[i].length;j++){
+        for (let j = 0; j < this.#arr[i].length; j++) {
           dates.push(this.#arr[i][j].key);
         }
       }
     }
     return dates;
-
   }
+
   //get all the value from the date in the hash map
-  getTask(date){
-    //changes the date into a timestamp
-    const datems=this.dateMS(date);
-    //hash function
-    const index=datems%this.#arr.size();
-    //if the bucket is not empty
-    if(this.#arr[index]!==null){
+  getTask(date) {
+    const datems = this.dateMS(date);
+    const index = datems % this.#bucketSize;
+    if (this.#arr[index] !== null) {
       //loops through entries in the bucket
-      for(let i=0;i<this.#arr[index].length;i++){
+      for (let i = 0; i < this.#arr[index].length; i++) {
         //compares the data stored in the hashmap with the input date
-        if(this.#arr[index][i].key.getTime()===date.getTime()){
+        if (this.#arr[index][i].key.getTime() === date.getTime()) {
           //returns a list of tasks from the min heap
-          return this.#arr[index][i].value.GetAllTask();
+          return this.#arr[index][i].value.getAllTasks();
         }
       }
     }
