@@ -66,6 +66,42 @@ class hashMap {
     const ms = date.getTime();
     return ms;
   }
+
+  //gets all the keys in the hash map
+  GetDates(){
+    const dates=[];
+    //loops through the buckets
+    for(let i=0;i<this.#arr.length;i++){
+      //if the bucket is not empty
+      if(this.#arr[i]!==null){
+        //loops through each entry in the bucket
+        for(let j=0;j<this.#arr[i].length;j++){
+          dates.push(this.#arr[i][j].key);
+        }
+      }
+    }
+    return dates;
+
+  }
+  //get all the value from the date in the hash map
+  getTask(date){
+    //changes the date into a timestamp
+    const datems=this.dateMS(date);
+    //hash function
+    const index=datems%this.#arr.size();
+    //if the bucket is not empty
+    if(this.#arr[index]!==null){
+      //loops through entries in the bucket
+      for(let i=0;i<this.#arr[index].length;i++){
+        //compares the data stored in the hashmap with the input date
+        if(this.#arr[index][i].key.getTime()===date.getTime()){
+          //returns a list of tasks from the min heap
+          return this.#arr[index][i].value.GetAllTask();
+        }
+      }
+    }
+    return [];
+  }
 }
 
 export default hashMap;
