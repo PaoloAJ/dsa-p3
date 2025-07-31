@@ -21,7 +21,7 @@ function RandomDate(n=30){
    //extracts the day
    const day=String(future.getDate()).padStart(2,'0');
 
-   return '${year}-${month}-${day}';
+   return `${year}-${month}-${day}`;
 }
 
 export function Generator(name='tasks.csv',count=100000){
@@ -34,7 +34,7 @@ export function Generator(name='tasks.csv',count=100000){
         const deadline=RandomDate(30);
         const duration=RandomNum(10,180);
 
-           csv+='${priority},${deadline},${name},${duration},${id}\n';
+           csv+=`${priority},${deadline},${name},${duration},${id}\n`;
     }
     //writes to the csv file
     fs.writeFileSync(name,csv);
