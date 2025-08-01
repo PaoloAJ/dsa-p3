@@ -28,7 +28,6 @@ class TaskScheduler {
 
     for (const date of dates) {
       const tasks = this.hashMap.getTask(date);
-      s;
       const scheduledTasks = greedySchedule(tasks);
       finalResult.set(date, scheduledTasks);
     }
