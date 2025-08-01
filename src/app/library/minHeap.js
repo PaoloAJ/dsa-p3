@@ -79,7 +79,7 @@ class MinHeap {
   }
 
   //returns the minheap as a list
-  getAllTask() {
+  getAllTasks() {
     const MinHeapList = [];
     for (let i = 1; i <= this.size(); i++) {
       // skip null place holder
