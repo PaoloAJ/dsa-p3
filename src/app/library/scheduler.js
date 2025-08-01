@@ -23,22 +23,45 @@ class TaskScheduler {
 
   // schedule all tasks on all dates using greedy algorithm
   scheduleAllTasks() {
-    const finalResult = new Map();
+    const scheduledHashMap = new HashMap();
+    const discardedHashMap = new HashMap();
     const dates = this.hashMap.getDates();
 
     for (const date of dates) {
       const tasks = this.hashMap.getTask(date);
-      const scheduledTasks = greedySchedule(tasks);
-      finalResult.set(date, scheduledTasks);
+      const { scheduled, discarded } = greedySchedule(tasks);
+
+      // scheduled tasks
+      for (const task of scheduled) {
+        scheduledHashMap.insert(date, task);
+      }
+
+      // discarded tasks
+      for (const task of discarded) {
+        discardedHashMap.insert(date, task);
+      }
     }
 
-    return finalResult;
+    return { scheduledHashMap, discardedHashMap };
   }
 
-  // schedule tasks for a specific date
+  // schedule tasks for a specific date and return both results
   scheduleTasksForDate(date) {
     const tasks = this.hashMap.getTask(date);
-    return greedySchedule(tasks);
+    const { scheduled, discarded } = greedySchedule(tasks);
+
+    const scheduledHashMap = new HashMap();
+    const discardedHashMap = new HashMap();
+
+    for (const task of scheduled) {
+      scheduledHashMap.insert(date, task);
+    }
+
+    for (const task of discarded) {
+      discardedHashMap.insert(date, task);
+    }
+
+    return { scheduledHashMap, discardedHashMap };
   }
 }
 

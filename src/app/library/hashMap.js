@@ -23,7 +23,7 @@ class hashMap {
         if (bucket !== null) {
           for (const entry of bucket) {
             // reinsert each task individually
-            const tasks = entry.value.getAllTask();
+            const tasks = entry.value.getAllTasks();
             for (const task of tasks) {
               this.insert(entry.key, task);
             }
