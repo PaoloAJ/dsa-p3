@@ -27,9 +27,20 @@ function Page() {
   useEffect(() => {
     async function fetchEvents() {
       setLoading(true);
-      const res = await fetch("/api/random-events?count=100");
-      const data = await res.json();
-      const arr = data.events;
+      let arr = [];
+      try {
+        const res = await fetch("/api/import-csv");
+        if (res.ok) {
+          const data = await res.json();
+          arr = data.events;
+        } else {
+          throw new Error("Failed to load CSV");
+        }
+      } catch (err) {
+        setError("Failed to load events from CSV file.");
+        setLoading(false);
+        return;
+      }
       //build MinHeap
       const heap = new MinHeap();
       arr.forEach((ev) => heap.insert(ev));
