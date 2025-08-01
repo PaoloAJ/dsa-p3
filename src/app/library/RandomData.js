@@ -29,12 +29,12 @@ export function Generator(name='tasks.csv',count=100000){
     //loop to generate the data
     for(let i=0;i<count;i++){
         const id=i;
-        const name=`Task${i}`;
+        const taskName=`Task${i}`;
         const priority=RandomNum(0,10);
         const deadline=RandomDate(30);
         const duration=RandomNum(10,180);
 
-           csv+=`${priority},${deadline},${name},${duration},${id}\n`;
+           csv+=`${priority},${deadline},${taskName},${duration},${id}\n`;
     }
     //writes to the csv file
     fs.writeFileSync(name,csv);
