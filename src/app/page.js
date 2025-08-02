@@ -4,32 +4,56 @@ import { useState } from "react";
 import { Plus, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import TaskScheduler from "./library/scheduler.js";
 
+// moved helper functions from RandomData.js into main
+function RandomNum(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+//function to create a random start and end time on a given day
+function RandomStartEnd(baseDate) {
+  const startHour = RandomNum(0, 20); // ensures there's room for duration
+  const startMinute = RandomNum(0, 59);
+  const duration = RandomNum(10, 180); // duration in minutes
+
+  const start = new Date(baseDate);
+  start.setHours(startHour, startMinute, 0, 0);
+
+  const end = new Date(start.getTime() + duration * 60 * 1000);
+  return { start, end };
+}
+
 export default function Page() {
   const [scheduler] = useState(function () {
     return new TaskScheduler();
   });
+
+  // reactvie states for our custom in hashmap
   const [tasks, setTasks] = useState([]);
   const [scheduledHashMap, setScheduledHashMap] = useState(null);
   const [discardedHashMap, setDiscardedHashMap] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
+  // reactive states for tasks
   const [taskName, setTaskName] = useState("");
   const [priority, setPriority] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("10:00");
+  const [startTime, setStartTime] = useState("06:00");
+  const [endTime, setEndTime] = useState("07:00");
 
-  function addTask() {
+  const [debugMode, setDebugMode] = useState(false);
+
+  function addTaskFunction() {
+    // this add task is different from the scheduler.js add task!
     if (taskName.trim() === "") {
       return;
     }
 
-    // dates are created in local timezones to avoid any conflicts with the schedule calendar
+    // dates are created in local timezones to avoid any conflicts with displayting the schedule calendar
     const taskDate = new Date(date + "T00:00:00");
     const startDateTime = new Date(date + "T" + startTime + ":00");
     const endDateTime = new Date(date + "T" + endTime + ":00");
 
-    // make sure if priority is a valid number
+    // ensures  priority is a valid number
     const isValidNumber = /^\d+$/.test(priority);
     if (!isValidNumber || priority <= 0 || priority >= 10) {
       alert("Please enter a valid integer");
@@ -57,45 +81,94 @@ export default function Page() {
 
     setTaskName("");
     setPriority("");
-    setStartTime("09:00");
-    setEndTime("10:00");
+    setStartTime("06:00");
+    setEndTime("07:00");
   }
 
   function generateSchedule() {
+    if (debugMode) {
+      console.log("Total tasks to process:", tasks.length);
+      console.time("Schedule Generation Time"); // times how long it takes to generate the optimized schedule
+    }
+
     const scheduleResult = scheduler.scheduleAllTasks();
     const scheduled = scheduleResult.scheduledHashMap;
     const discarded = scheduleResult.discardedHashMap;
 
+    if (debugMode) {
+      console.timeEnd("Schedule Generation Time");
+
+      // amount of  scheduled tasks
+      let scheduledCount = 0;
+      if (scheduled) {
+        const scheduledDates = scheduled.getDates();
+        for (let i = 0; i < scheduledDates.length; i++) {
+          const tasksForDate = scheduled.getTask(scheduledDates[i]);
+          scheduledCount += tasksForDate.length;
+        }
+      }
+
+      // amount of discarded tasks
+      let discardedCount = 0;
+      if (discarded) {
+        const discardedDates = discarded.getDates();
+        for (let i = 0; i < discardedDates.length; i++) {
+          const tasksForDate = discarded.getTask(discardedDates[i]);
+          discardedCount += tasksForDate.length;
+        }
+      }
+
+      console.log("Successfully scheduled:", scheduledCount, "tasks");
+      console.log("Discarded due to conflicts:", discardedCount, "tasks");
+      console.log("Total processed:", scheduledCount + discardedCount);
+      console.log(
+        "Success rate:",
+        ((scheduledCount / (scheduledCount + discardedCount)) * 100).toFixed(
+          2
+        ) + "%"
+      );
+    }
+
     // display discarded tasks in console
-    console.log("discarded tasks: ");
 
     if (discarded) {
       const discardedDates = discarded.getDates();
 
       if (discardedDates.length === 0) {
-        console.log("no tasks were discarded");
+        console.log("No tasks were discarded");
       } else {
+        let totalDiscarded = 0;
+
         for (let i = 0; i < discardedDates.length; i++) {
           const date = discardedDates[i];
           const tasksForDate = discarded.getTask(date);
+          totalDiscarded += tasksForDate.length;
 
-          console.log("Date:", date.toLocaleDateString());
+          if (debugMode || tasksForDate.length <= 20) {
+            // Show all details in debug mode, or if few tasks
+            console.log("Date:", date.toLocaleDateString());
 
-          for (let j = 0; j < tasksForDate.length; j++) {
-            const task = tasksForDate[j];
-            const startTime = task.start ? formatTime(task.start) : "N/A";
-            const endTime = task.end ? formatTime(task.end) : "N/A";
+            for (let j = 0; j < tasksForDate.length; j++) {
+              const task = tasksForDate[j];
+              const startTime = task.start ? formatTime(task.start) : "N/A";
+              const endTime = task.end ? formatTime(task.end) : "N/A";
 
-            console.log("  - Task:", task.name);
-            console.log("    Priority:", task.priority);
-            console.log("    Time:", startTime + " - " + endTime);
-            console.log("    Reason: Scheduling conflict");
-            console.log(""); // Empty line for readability
+              console.log("Task:", task.name);
+              console.log("Priority:", task.priority);
+              console.log("Time:", startTime + " - " + endTime);
+              console.log("Reason: Scheduling conflict");
+              console.log("");
+            }
           }
+        }
+
+        if (!debugMode && totalDiscarded > 20) {
+          console.log("Total discarded tasks:", totalDiscarded);
+          // set debug mode ON to see all discarded tasks details
         }
       }
     } else {
-      console.log("No discarded tasks data available");
+      console.log("No discarded tasks");
     }
 
     setScheduledHashMap(scheduled);
@@ -104,10 +177,10 @@ export default function Page() {
 
   function formatTime(date) {
     if (!date) {
-      return "N/A";
+      return "Errpr";
     }
     if (!(date instanceof Date)) {
-      return "N/A";
+      return "Error";
     }
 
     return date.toLocaleTimeString("en-US", {
@@ -116,7 +189,7 @@ export default function Page() {
     });
   }
 
-  // Calendar helper functions
+  // for calendar or helper functions
   function getDaysInMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   }
@@ -144,7 +217,7 @@ export default function Page() {
       day
     );
 
-    // Get all dates from the scheduledHashMap
+    // get all dates from the scheduledHashMap
     const dates = scheduledHashMap.getDates();
 
     for (let i = 0; i < dates.length; i++) {
@@ -206,6 +279,37 @@ export default function Page() {
     setEndTime(e.target.value);
   }
 
+  function toggleDebugMode() {
+    setDebugMode(!debugMode);
+    if (!debugMode) {
+      console.log("Debug mode: ON");
+    } else {
+      console.log("Debug mode: OFF");
+    }
+  }
+
+  function addBulkTestTasks() {
+    const testTasks = scheduler.generateBulkTestTasks(100000, 30);
+    setTasks(function (prevTasks) {
+      return [...prevTasks, ...testTasks];
+    });
+  }
+
+  function addBulkTestTasksAndSchedule() {
+    console.log("Adding 100,000 test tasks and generating schedule");
+
+    // generate tasks using scheduler
+    const testTasks = scheduler.generateBulkTestTasks(100000, 30);
+    setTasks(function (prevTasks) {
+      return [...prevTasks, ...testTasks];
+    });
+
+    // short delay before optimizing schedule to prevent crashses before generateBulkTest finishes
+    setTimeout(function () {
+      generateSchedule();
+    }, 200);
+  }
+
   function navigatePreviousMonth() {
     navigateMonth(-1);
   }
@@ -220,7 +324,7 @@ export default function Page() {
     year: "numeric",
   });
 
-  // Check if we should show the calendar
+  // show calender or not
   const shouldShowCalendar = scheduledHashMap !== null;
 
   return (
@@ -229,7 +333,7 @@ export default function Page() {
         🐊 Gators Task Scheduler
       </h1>
 
-      {/* Add Task Form */}
+      {/* adding a new task/form*/}
       <div className="bg-white rounded-lg shadow p-6 mb-8 border border-blue-300">
         <h2 className="text-xl font-semibold mb-4 text-blue-800">
           Add New Task
@@ -278,12 +382,43 @@ export default function Page() {
         </div>
 
         <button
-          onClick={addTask}
+          onClick={addTaskFunction}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-orange-500 transition-colors flex items-center justify-center gap-2"
         >
           <Plus size={20} />
           Add Task
         </button>
+
+        {/* Debug Controls */}
+        <div className="mt-4 p-3 bg-gray-100 rounded-lg border">
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">
+            Debug Controls
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={toggleDebugMode}
+              className={`px-3 py-1 text-xs rounded ${
+                debugMode
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-300 text-gray-700"
+              }`}
+            >
+              Debug Mode: {debugMode ? "ON" : "OFF"}
+            </button>
+            <button
+              onClick={addBulkTestTasks}
+              className="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600"
+            >
+              Add 100k Test Tasks
+            </button>
+            <button
+              onClick={addBulkTestTasksAndSchedule}
+              className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Add 100k + Schedule
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* task summary */}
@@ -300,15 +435,60 @@ export default function Page() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               {tasks.slice(0, 6).map(function (task) {
+                // Check if this task was discarded
+                let isDiscarded = false;
+
+                if (discardedHashMap) {
+                  const discardedDates = discardedHashMap.getDates();
+
+                  for (let i = 0; i < discardedDates.length; i++) {
+                    const discardedDate = discardedDates[i];
+
+                    // if this task's date matches a discarded date
+                    if (isSameDay(task.date, discardedDate)) {
+                      const discardedTasks =
+                        discardedHashMap.getTask(discardedDate);
+
+                      // if this specific task is in the discarded list
+                      for (let j = 0; j < discardedTasks.length; j++) {
+                        const discardedTask = discardedTasks[j];
+                        if (
+                          discardedTask.name === task.name &&
+                          discardedTask.priority === task.priority &&
+                          discardedTask.start.getTime() === task.start.getTime()
+                        ) {
+                          isDiscarded = true;
+                          break;
+                        }
+                      }
+                    }
+
+                    if (isDiscarded) break;
+                  }
+                }
+
+                // different styling based on whether task is discarded
+                let taskClassName = "border rounded-lg p-3";
+                let textClassName = "font-semibold text-blue-900 text-sm";
+                let dateClassName = "text-xs text-gray-800";
+
+                if (isDiscarded) {
+                  taskClassName = taskClassName + " bg-red-50 border-red-200";
+                  textClassName = textClassName + " line-through text-red-600";
+                  dateClassName = dateClassName + " line-through text-red-500";
+                } else {
+                  taskClassName = taskClassName + " bg-blue-50";
+                }
+
                 return (
-                  <div
-                    key={task.id}
-                    className="border rounded-lg p-3 bg-blue-50"
-                  >
-                    <h3 className="font-semibold text-blue-900 text-sm">
+                  <div key={task.id} className={taskClassName}>
+                    <h3 className={textClassName}>
                       {task.name}
+                      {isDiscarded && (
+                        <span className="text-xs ml-2">(Discarded)</span>
+                      )}
                     </h3>
-                    <p className="text-xs text-gray-800">
+                    <p className={dateClassName}>
                       {task.date.toLocaleDateString()} • P{task.priority}
                     </p>
                   </div>
