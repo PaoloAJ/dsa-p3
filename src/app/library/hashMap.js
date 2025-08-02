@@ -39,7 +39,7 @@ class hashMap {
     const index = datems % this.#bucketSize;
 
     if (this.#arr[index] === null) {
-      // === for strict comparison
+      // === for strict comparison !!! chat this is important to ensure type safety in js
       const minHeap = new Heap();
       minHeap.insert(task);
       this.#arr[index] = [{ key: date, value: minHeap }];
@@ -71,13 +71,12 @@ class hashMap {
   }
 
   //gets all the keys in the hash map
+  // returns an array
   getDates() {
     const dates = [];
     //loops through the buckets
     for (let i = 0; i < this.#arr.length; i++) {
-      //if the bucket is not empty
       if (this.#arr[i] !== null) {
-        //loops through each entry in the bucket
         for (let j = 0; j < this.#arr[i].length; j++) {
           dates.push(this.#arr[i][j].key);
         }
@@ -87,13 +86,12 @@ class hashMap {
   }
 
   //get all the value from the date in the hash map
+  // returns an array
   getTask(date) {
     const datems = this.dateMS(date);
     const index = datems % this.#bucketSize;
     if (this.#arr[index] !== null) {
-      //loops through entries in the bucket
       for (let i = 0; i < this.#arr[index].length; i++) {
-        //compares the data stored in the hashmap with the input date
         if (this.#arr[index][i].key.getTime() === date.getTime()) {
           //returns a list of tasks from the min heap
           return this.#arr[index][i].value.getAllTasks();
