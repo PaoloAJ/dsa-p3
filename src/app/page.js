@@ -4,24 +4,6 @@ import { useState } from "react";
 import { Plus, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import TaskScheduler from "./library/scheduler.js";
 
-// moved helper functions from RandomData.js into main
-function RandomNum(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-//function to create a random start and end time on a given day
-function RandomStartEnd(baseDate) {
-  const startHour = RandomNum(0, 20); // ensures there's room for duration
-  const startMinute = RandomNum(0, 59);
-  const duration = RandomNum(10, 180); // duration in minutes
-
-  const start = new Date(baseDate);
-  start.setHours(startHour, startMinute, 0, 0);
-
-  const end = new Date(start.getTime() + duration * 60 * 1000);
-  return { start, end };
-}
-
 export default function Page() {
   const [scheduler] = useState(function () {
     return new TaskScheduler();
@@ -145,7 +127,7 @@ export default function Page() {
           totalDiscarded += tasksForDate.length;
 
           if (debugMode || tasksForDate.length <= 20) {
-            // Show all details in debug mode, or if few tasks
+            // show all details in debug mode
             console.log("Date:", date.toLocaleDateString());
 
             for (let j = 0; j < tasksForDate.length; j++) {
@@ -389,7 +371,7 @@ export default function Page() {
           Add Task
         </button>
 
-        {/* Debug Controls */}
+        {/* debug control */}
         <div className="mt-4 p-3 bg-gray-100 rounded-lg border">
           <h3 className="text-sm font-semibold text-gray-700 mb-2">
             Debug Controls
