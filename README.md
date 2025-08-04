@@ -39,17 +39,20 @@ npm run dev
 
 ## 🐳 Running with Docker
 
-# 1. Build the Docker image
+1. **Build the Docker image**
 
 docker build -t smart-scheduler .
 
-# 2. Run the Docker container
+2. **Run the Docker container**
 
 docker run -p 3000:3000 smart-scheduler
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [GNU General Public License v3.0](LICENSE.md).
 
-You are free to use, modify, and distribute this software with proper attribution.
-See the LICENSE file for more details.
+You may use, modify, and share this software for personal, academic, or non-commercial use.  
+Any modified versions must also remain open-source and under the same license.  
+Commercial use without permission is prohibited.
+
+See the LICENSE.md file for full details.
