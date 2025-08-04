@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Smart Scheduler",
+  title: "Swampy Scheduler",
   icons: {
     icon: "/favicon.png",
   },

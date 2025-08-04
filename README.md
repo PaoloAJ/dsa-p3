@@ -1,4 +1,4 @@
-# 🐊 Smart Scheduler
+# 🐊 Swampy Scheduler
 
 A UF Gator-themed smart scheduling app that helps users organize and prioritize their tasks efficiently using a **custom-built hash map** and **priority queue (min heap)**. Built with **Next.js** and packaged with **Docker**, this project offers both development flexibility and production scalability.
 
@@ -6,7 +6,7 @@ A UF Gator-themed smart scheduling app that helps users organize and prioritize 
 
 - Anilov Villanueva
 - Rafael Matheus
-- [Name 3]
+- Juan Sanchez
 
 ## 📌 Project Description
 
@@ -49,7 +49,7 @@ docker run -p 3000:3000 smart-scheduler
 
 ## 📄 License
 
-This project is licensed under the MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
 You are free to use, modify, and distribute this software with proper attribution.
 See the LICENSE file for more details.
