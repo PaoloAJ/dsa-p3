@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import TaskScheduler from "./library/scheduler.js";
 
 export default function Page() {
@@ -23,6 +30,9 @@ export default function Page() {
   const [endTime, setEndTime] = useState("07:00");
 
   const [debugMode, setDebugMode] = useState(false);
+
+  // new state for day expansion
+  const [expandedDay, setExpandedDay] = useState(null);
 
   function addTaskFunction() {
     // this add task is different from the scheduler.js add task!
@@ -222,6 +232,7 @@ export default function Page() {
       newDate.setMonth(newDate.getMonth() + direction);
       return newDate;
     });
+    setExpandedDay(null); // close expanded day when navigating
   }
 
   function generateCalendarDays() {
@@ -239,6 +250,32 @@ export default function Page() {
     }
 
     return days;
+  }
+
+  // new function to handle day clicks
+  function handleDayClick(day) {
+    if (day === null || !hasTasksForDay(day)) return;
+
+    if (expandedDay === day) {
+      setExpandedDay(null); // close if already expanded
+    } else {
+      setExpandedDay(day); // expand clicked day
+    }
+  }
+
+  // new function to get expanded day info
+  function getExpandedDayInfo(day) {
+    const dayDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
+    const tasks = getTasksForDay(day);
+
+    return {
+      date: dayDate,
+      tasks: tasks.sort((a, b) => a.start - b.start), // sort by start time
+    };
   }
 
   function handleTaskNameChange(e) {
@@ -498,7 +535,12 @@ export default function Page() {
       {shouldShowCalendar && (
         <div className="bg-white rounded-lg shadow p-6 border border-blue-300">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-green-800">Swamp Time</h2>
+            <h2 className="text-xl font-semibold text-green-800">
+              Swamp Time
+              <span className="text-sm text-gray-600 ml-2">
+                (click days with tasks to expand)
+              </span>
+            </h2>
 
             <div className="flex items-center gap-4">
               <button
@@ -522,7 +564,7 @@ export default function Page() {
           </div>
 
           {/* calendar grid */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-2 mb-4">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(function (
               day
             ) {
@@ -538,19 +580,31 @@ export default function Page() {
 
             {/* days */}
             {calendarDays.map(function (day, index) {
+              const hasTasks = hasTasksForDay(day);
+              const isExpanded = expandedDay === day;
+
               let dayClassName =
-                "min-h-24 p-2 border rounded-lg transition-colors";
+                "min-h-24 p-2 border rounded-lg transition-all duration-200";
 
               if (day === null) {
                 dayClassName = dayClassName + " bg-gray-50";
-              } else if (hasTasksForDay(day)) {
-                dayClassName = dayClassName + " bg-orange-50 border-orange-200";
+              } else if (hasTasks) {
+                dayClassName =
+                  dayClassName +
+                  " bg-orange-50 border-orange-200 cursor-pointer hover:bg-orange-100";
+                if (isExpanded) {
+                  dayClassName = dayClassName + " ring-2 ring-orange-400";
+                }
               } else {
                 dayClassName = dayClassName + " bg-white hover:bg-gray-50";
               }
 
               return (
-                <div key={index} className={dayClassName}>
+                <div
+                  key={index}
+                  className={dayClassName}
+                  onClick={() => handleDayClick(day)}
+                >
                   {day !== null && (
                     <>
                       <div className="font-semibold text-sm text-gray-800 mb-1">
@@ -599,6 +653,14 @@ export default function Page() {
                               +{getTasksForDay(day).length - 2} more
                             </div>
                           )}
+
+                          {hasTasks && (
+                            <div className="text-xs text-center text-orange-600 mt-1">
+                              {isExpanded
+                                ? "click to collapse"
+                                : "click to expand"}
+                            </div>
+                          )}
                         </div>
                       )}
                     </>
@@ -607,6 +669,64 @@ export default function Page() {
               );
             })}
           </div>
+
+          {/* expanded day details */}
+          {expandedDay && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 mt-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-orange-800">
+                  {getExpandedDayInfo(expandedDay).date.toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )}
+                </h3>
+                <button
+                  onClick={() => setExpandedDay(null)}
+                  className="p-1 hover:bg-orange-100 rounded transition-colors"
+                >
+                  <X size={20} className="text-orange-600" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {getExpandedDayInfo(expandedDay).tasks.map(function (
+                  task,
+                  index
+                ) {
+                  return (
+                    <div
+                      key={index}
+                      className="bg-white rounded-lg p-4 border border-orange-200"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-800">
+                          {task.name}
+                        </h4>
+                        <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          Priority {task.priority}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Clock size={14} />
+                          {formatTime(task.start)} - {formatTime(task.end)}
+                        </div>
+                        <div>
+                          Duration:{" "}
+                          {Math.round((task.end - task.start) / (1000 * 60))}{" "}
+                          minutes
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
