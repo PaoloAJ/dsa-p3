@@ -39,13 +39,13 @@ npm run dev
 
 ## 🐳 Running with Docker
 
-1. **Build the Docker image**
-
+```bash
+# 1. Build the Docker image
 docker build -t smart-scheduler .
 
-2. **Run the Docker container**
-
+# 2. Run the Docker container
 docker run -p 3000:3000 smart-scheduler
+```
 
 ## 📄 License
 
